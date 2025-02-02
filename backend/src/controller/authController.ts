@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { loginType } from "../types/authTypes";
+import { loginType } from "../utils/authTypes";
 import { PrismaClient } from "@prisma/client";
+import { hashPassword } from "../utils/passHash";
 
 const prisma = new PrismaClient();
 
@@ -14,12 +15,13 @@ export const signup = async (req: Request, res: Response) => {
       });
       return;
     }
+    const hashedPassword: string = await hashPassword(payload.data.password);
     const user = await prisma.user.create({
       data: {
         firstName: payload.data.firstName,
         lastName: payload.data.lastName,
         email: payload.data.email,
-        password: payload.data.password,
+        password: hashedPassword,
       },
     });
     res.status(201).json({
